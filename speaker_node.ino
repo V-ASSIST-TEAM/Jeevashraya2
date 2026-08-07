@@ -26,19 +26,28 @@ void buzzerAlert()
   }
 }
 
+bool alertReceived = false;
+
 void onDataRecv(uint8_t *mac, uint8_t *data, uint8_t len)
 {
-  memcpy(&incoming,data,sizeof(incoming));
+    memcpy(&incoming, data, min((int)len, (int)sizeof(incoming)));
 
-  Serial.print("Received: ");
-  Serial.println(incoming.message);
+    if(strcmp(incoming.message, "FALL ALERT") == 0)
+    {
+        alertReceived = true;
+    }
+}
 
-  if(strcmp(incoming.message,"FALL ALERT")==0)
-  {
-    Serial.println("ALERT RECEIVED");
+void loop()
+{
+    if(alertReceived)
+    {
+        alertReceived = false;
 
-    buzzerAlert();
-  }
+        Serial.println("ALERT RECEIVED");
+
+        buzzerAlert();
+    }
 }
 
 void setup()
@@ -49,6 +58,8 @@ void setup()
   digitalWrite(BUZZER,LOW);
 
   WiFi.mode(WIFI_STA);
+  Serial.print("Channel: ");
+  Serial.println(wifi_get_channel());
 
   Serial.print("MAC: ");
   Serial.println(WiFi.macAddress());
@@ -66,7 +77,3 @@ void setup()
   Serial.println("Waiting for Alert...");
 }
 
-void loop()
-{
-
-}
