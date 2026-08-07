@@ -53,7 +53,7 @@ const float ALPHA = 0.3;
 // CHANGE THIS LATER
 uint8_t speakerAddress[] =
 {
-  0x24,0x6F,0x28,0x00,0x00,0x00
+  0xFC,0xF5,0xC4,0xAA,0xD3,0xD3
 };
 
 typedef struct
@@ -196,6 +196,8 @@ else
 
   // ESP-NOW initialization
   WiFi.mode(WIFI_STA);
+  Serial.print("Channel: ");
+  Serial.println(WiFi.channel());
 
   if(esp_now_init()!=ESP_OK)
   {
@@ -222,6 +224,7 @@ else
       Serial.println("Failed to add Speaker Peer");
       return;
   }
+  Serial.println("Speaker Peer Added");
 
   Serial.println("Scout Node Ready");
 
@@ -234,24 +237,21 @@ else
 
 void sendAlert(const char *msg)
 {
-  strcpy(outgoing.message,msg);
+    strcpy(outgoing.message, msg);
 
-  esp_err_t result =
-  esp_now_send(
-      speakerAddress,
-      (uint8_t *)&outgoing,
-      sizeof(outgoing)
-  );
+    esp_err_t result = esp_now_send(
+        speakerAddress,
+        (uint8_t *)&outgoing,
+        sizeof(outgoing)
+    );
 
+    Serial.print("esp_now_send() returned: ");
+    Serial.println(result);
 
-  if(result == ESP_OK)
-  {
-      Serial.println("Alert Sent");
-  }
-  else
-  {
-      Serial.println("Send Error");
-  }
+    if(result == ESP_OK)
+        Serial.println("Alert Sent");
+    else
+        Serial.println("Send Error");
 }
 
 
@@ -348,7 +348,7 @@ display.display();
 
 
 
-  if(tiltDifference > TILT_THRESHOLD &
+  if(tiltDifference > TILT_THRESHOLD &&
      pressureDifference > PRESSURE_THRESHOLD)
   {
       sustainCounter++;
