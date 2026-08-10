@@ -4,6 +4,24 @@
 #include <esp_now.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+#include <BLEDevice.h>
+#include <BLEUtils.h>
+#include <BLEServer.h>
+#include <BLEAdvertising.h>
+
+// =======================
+// BLE Definitions & Protocol
+// =======================
+#define BLE_SERVICE_UUID "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
+#define BLE_DEVICE_NAME  "ScoutNode_J2"
+
+enum AlertState {
+  STATE_NORMAL,
+  STATE_FALL_ALERT
+};
+
+AlertState currentBleState = STATE_NORMAL;
+BLEAdvertising *pAdvertising = nullptr;
 
 // =======================
 // I2C Pins
@@ -62,6 +80,59 @@ typedef struct
 } AlertMessage;
 
 AlertMessage outgoing;
+
+//=======================
+// BLE Advertising Update (State-Driven)
+//=======================
+
+void updateBleAdvertising(AlertState state)
+{
+    if (pAdvertising == nullptr) return;
+
+    pAdvertising->stop();
+
+    BLEAdvertisementData advData;
+
+    // Do NOT call setCompleteServices() to prevent exceeding 31-byte legacy BLE packet limit
+
+    // 1-byte state payload: 0x00 = NORMAL, 0x01 = FALL_ALERT
+    uint8_t alertByte = (state == STATE_FALL_ALERT) ? 0x01 : 0x00;
+    String payload = "";
+    payload += (char)alertByte;
+
+    advData.setServiceData(
+        BLEUUID(BLE_SERVICE_UUID),
+        payload
+    );
+
+    // Main advertisement packet
+    pAdvertising->setAdvertisementData(advData);
+
+    // Keep device name in scan response to reduce
+    // the size of the main advertising packet.
+    BLEAdvertisementData scanResponseData;
+    scanResponseData.setName(BLE_DEVICE_NAME);
+    pAdvertising->setScanResponseData(scanResponseData);
+
+    // Advertising interval: 160 ms
+    pAdvertising->setMinInterval(0x0100);
+    pAdvertising->setMaxInterval(0x0100);
+
+    pAdvertising->start();
+
+    Serial.print("BLE Advertisement Updated: ");
+    if (state == STATE_FALL_ALERT)
+    {
+        Serial.println("FALL_ALERT / state 0x01");
+    }
+    else
+    {
+        Serial.println("NORMAL / state 0x00");
+    }
+}
+
+
+
 
 //=======================
 // MPU6050 Functions
@@ -228,7 +299,13 @@ else
   }
   Serial.println("Speaker Peer Added");
 
-  Serial.println("Scout Node Ready");
+  // Initialize BLE Device and start advertising
+  BLEDevice::init(BLE_DEVICE_NAME);
+  pAdvertising = BLEDevice::getAdvertising();
+  currentBleState = STATE_NORMAL;
+  updateBleAdvertising(STATE_NORMAL);
+
+  Serial.println("Scout Node Ready (ESP-NOW + BLE Active)");
 
 }
 
@@ -303,73 +380,56 @@ void loop()
 
 
 
-  // Serial.print("Tilt : ");
-  // Serial.print(currentTilt);
-
-  // Serial.print("  Tilt Diff : ");
-  // Serial.print(tiltDifference);
-
-
-  // Serial.print("  Pressure : ");
-  // Serial.print(currentPressure);
-
-
-  // Serial.print("  Pressure Diff : ");
-  // Serial.println(pressureDifference);
   // =======================
-// CSV Serial Output
-// =======================
+  // CSV Serial Output
+  // =======================
 
-Serial.print(millis());
-Serial.print(",");
-Serial.print(currentTilt, 2);
-Serial.print(",");
-Serial.print(tiltDifference, 2);
-Serial.print(",");
-Serial.print(currentPressure, 2);
-Serial.print(",");
-Serial.print(pressureDifference, 2);
-Serial.print(",");
+  Serial.print(millis());
+  Serial.print(",");
+  Serial.print(currentTilt, 2);
+  Serial.print(",");
+  Serial.print(tiltDifference, 2);
+  Serial.print(",");
+  Serial.print(currentPressure, 2);
+  Serial.print(",");
+  Serial.print(pressureDifference, 2);
+  Serial.print(",");
 
-if (sustainCounter >= REQUIRED_COUNT)
-{
-    Serial.println("ALERT");
-}
-else
-{
-    Serial.println("SAFE");
-}
+  if (sustainCounter >= REQUIRED_COUNT)
+  {
+      Serial.println("ALERT");
+  }
+  else
+  {
+      Serial.println("SAFE");
+  }
   display.clearDisplay();
 
-display.setTextSize(1);
-display.setCursor(0,0);
+  display.setTextSize(1);
+  display.setCursor(0,0);
 
-display.print("Tilt: ");
-display.println(currentTilt);
+  display.print("Tilt: ");
+  display.println(currentTilt);
 
-display.print("Diff: ");
-display.println(tiltDifference);
-
-
-display.print("Pressure: ");
-display.println(currentPressure);
+  display.print("Diff: ");
+  display.println(tiltDifference);
 
 
-if(sustainCounter >= REQUIRED_COUNT)
-{
-  display.println("STATUS: ALERT");
-}
-else
-{
-  display.println("STATUS: SAFE");
-}
+  display.print("Pressure: ");
+  display.println(currentPressure);
 
 
-display.display();
+  if(sustainCounter >= REQUIRED_COUNT)
+  {
+    display.println("STATUS: ALERT");
+  }
+  else
+  {
+    display.println("STATUS: SAFE");
+  }
 
 
-
-  bool danger = false;
+  display.display();
 
 
 
@@ -377,34 +437,44 @@ display.display();
      pressureDifference > PRESSURE_THRESHOLD)
   {
       sustainCounter++;
-
   }
   else
   {
-      sustainCounter=0;
-      alertTriggered=false;
+      sustainCounter = 0;
+      if (alertTriggered)
+      {
+          alertTriggered = false;
+          // State transition: Return to NORMAL
+          if (currentBleState != STATE_NORMAL)
+          {
+              currentBleState = STATE_NORMAL;
+              updateBleAdvertising(STATE_NORMAL);
+          }
+      }
   }
 
 
 
   // Condition should remain for some samples
-
   if(sustainCounter >= REQUIRED_COUNT &&
      !alertTriggered)
   {
-
       Serial.println("DANGER DETECTED");
 
-
+      // 1. ESP-NOW to Speaker Node
       sendAlert("FALL ALERT");
 
+      alertTriggered = true;
 
-      alertTriggered=true;
-
+      // 2. State transition: Update BLE Broadcast to FALL_ALERT
+      if (currentBleState != STATE_FALL_ALERT)
+      {
+          currentBleState = STATE_FALL_ALERT;
+          updateBleAdvertising(STATE_FALL_ALERT);
+      }
   }
-
-
 
   delay(200);
 
 }
+
