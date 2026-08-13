@@ -171,7 +171,7 @@ fun RescueScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(
-                            text = "⚠️ $error",
+                            text = "Error: $error",
                             color = MaterialTheme.colorScheme.onErrorContainer,
                             modifier = Modifier.padding(12.dp),
                             style = MaterialTheme.typography.bodyMedium
@@ -353,7 +353,7 @@ private fun ScoutNodeDetailsCard(node: ScoutNodeAlert) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "📡 Signal Finder",
+                text = "Signal Finder",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -418,7 +418,7 @@ private fun ScoutNodeDetailsCard(node: ScoutNodeAlert) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = if (showAdvanced) "▼ Hide Diagnostic Data" else "▶ Show Diagnostic Data",
+                    text = if (showAdvanced) "Hide Diagnostic Data" else "Show Diagnostic Data",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
@@ -505,7 +505,7 @@ private fun EmergencyAlertBanner(node: ScoutNodeAlert, formattedTime: String) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "🚨 CRITICAL EMERGENCY",
+                text = "CRITICAL EMERGENCY",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.ExtraBold,
                 color = Color(0xFFD50000)
@@ -551,7 +551,7 @@ private fun SafeStatusBanner(node: ScoutNodeAlert, formattedTime: String) {
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Text(
-                text = "✅ STATUS: SAFE / MONITORING",
+                text = "STATUS: SAFE / MONITORING",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF1B5E20)
