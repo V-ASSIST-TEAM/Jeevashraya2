@@ -17,6 +17,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -268,10 +269,69 @@ private fun ScanningHeader(
     }
 }
 
+private data class ProximityInfo(
+    val label: String,
+    val color: Color,
+    val level: Int,
+    val description: String
+)
+
+@Composable
+private fun ProximityGauge(level: Int, color: Color) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        for (i in 1..4) {
+            val isFilled = i <= level
+            val segmentColor = if (isFilled) color else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.15f)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(12.dp)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(segmentColor)
+            )
+        }
+    }
+}
+
 @Composable
 private fun ScoutNodeDetailsCard(node: ScoutNodeAlert) {
     val timeFormatter = remember { SimpleDateFormat("HH:mm:ss", Locale.getDefault()) }
     val formattedTime = remember(node.timestamp) { timeFormatter.format(Date(node.timestamp)) }
+    var showAdvanced by remember { mutableStateOf(false) }
+
+    val proximityInfo = remember(node.rssi) {
+        when {
+            node.rssi >= -60 -> ProximityInfo(
+                label = "Very Close",
+                color = Color(0xFFD50000), // Crimson Red
+                level = 4,
+                description = "The signal is extremely strong! Look in your immediate surroundings."
+            )
+            node.rssi >= -75 -> ProximityInfo(
+                label = "Getting Closer",
+                color = Color(0xFFFF6D00), // Dark Orange
+                level = 3,
+                description = "You are approaching the node. Continue moving in this direction."
+            )
+            node.rssi >= -85 -> ProximityInfo(
+                label = "Far",
+                color = Color(0xFF00B0FF), // Bright Blue
+                level = 2,
+                description = "Signal detected. Walk in different directions to see if the signal gets stronger."
+            )
+            else -> ProximityInfo(
+                label = "Very Far",
+                color = Color(0xFF78909C), // Slate Grey
+                level = 1,
+                description = "The signal is very weak. Keep searching and move to higher ground."
+            )
+        }
+    }
 
     // High-Priority Alert Banner vs Safe Banner
     if (node.isAlertActive) {
@@ -290,47 +350,128 @@ private fun ScoutNodeDetailsCard(node: ScoutNodeAlert) {
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = "Scout Node Telemetry",
+                text = "📡 Signal Finder",
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
 
+            // Proximity indicator text
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Device Name:", color = MaterialTheme.colorScheme.outline)
-                Text(node.deviceName, fontWeight = FontWeight.SemiBold)
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("MAC Address:", color = MaterialTheme.colorScheme.outline)
-                Text(node.deviceAddress, fontWeight = FontWeight.Normal)
-            }
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Signal Strength (RSSI):", color = MaterialTheme.colorScheme.outline)
                 Text(
-                    text = "${node.rssi} dBm (${getRssiLabel(node.rssi)})",
+                    text = "Proximity Status:",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+                Text(
+                    text = proximityInfo.label,
+                    color = proximityInfo.color,
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp
+                )
+            }
+
+            // Visual segment gauge
+            ProximityGauge(level = proximityInfo.level, color = proximityInfo.color)
+
+            // Guidance text
+            Text(
+                text = proximityInfo.description,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+
+            // Proximity tip box
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.05f),
+                        RoundedCornerShape(8.dp)
+                    )
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = "Walk around. If the bar fills up, you are walking in the right direction. If it drops, turn back.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            // Expandable Technical Diagnostics Toggle
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(8.dp))
+                    .clickable { showAdvanced = !showAdvanced }
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = if (showAdvanced) "▼ Hide Diagnostic Data" else "▶ Show Diagnostic Data",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Last Packet Received:", color = MaterialTheme.colorScheme.outline)
-                Text(formattedTime, fontWeight = FontWeight.Normal)
+            AnimatedVisibility(visible = showAdvanced) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.7f),
+                            RoundedCornerShape(8.dp)
+                        )
+                        .padding(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Device Name:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(node.deviceName, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("MAC Address:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(node.deviceAddress, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Normal)
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Raw Signal (RSSI):", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(
+                            text = "${node.rssi} dBm",
+                            style = MaterialTheme.typography.bodySmall,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Last Ping Received:", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(formattedTime, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Normal)
+                    }
+                }
             }
         }
     }
