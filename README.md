@@ -75,7 +75,14 @@ The prototype demonstration presents the operation of the sensing, communication
 
 ![J2Rescue Mobile Application](/jeevashraya-ble.jpg)
 
-*J2Rescue application detecting the BLE rescue beacon and providing proximity information for locating the buried Scout Node.*
+*J2Rescue application detecting the BLE rescue beacon and providing proximity information for locating the buried Scout Node.*     
+
+#### ML Dashboard
+
+![ML dashboard](/jeevashraya-ml_dashboard.jpg)
+
+*Dashboard demonstrating SAFE, FILTERED ANOMALY, and CRITICAL landslide-risk states*     
+
 
 ### Videos
 
@@ -273,6 +280,18 @@ Introduce the required motion/tilt change together with the corresponding pressu
 4. The buzzer is activated.
 5. The OLED displays the landslide warning.
 
+### J2Rescue Setup
+
+The J2Rescue mobile application is used during the post-burial rescue phase to detect the BLE beacon transmitted by the buried Scout Node.
+
+1. Open the J2Rescue folder in *Android Studio*.
+2. Allow Android Studio to sync the Gradle project and download the required dependencies.
+3. Connect an Android device with Bluetooth enabled, or use a compatible Android emulator.
+4. Build and run the application on the Android device.
+5. Grant the required *Bluetooth/Nearby Devices* permissions when prompted.
+6. Ensure Bluetooth is enabled on the device before starting the rescue search.
+7. Launch *J2Rescue* and use the BLE scanning functionality to search for the Scout Node's broadcast signal.
+
 ### Burial and Rescue Demonstration
 
 The post-disaster rescue mechanism can be demonstrated as follows:
@@ -283,7 +302,7 @@ The post-disaster rescue mechanism can be demonstrated as follows:
 4. Scan for the Scout Node's BLE signal.
 5. Move the mobile device toward the beacon source.
 6. Observe the changing proximity indication.
-7. When the application indicates **"Very Near,"** the rescuer is directly above or extremely close to the buried Scout Node.
+7. When the application indicates **"Very Close,"** the rescuer is directly above or extremely close to the buried Scout Node.
 
 ### ML Dashboard
 
@@ -394,6 +413,7 @@ Jeevashraya2/
 ├── sensor_data.csv
 ├── jeevashraya-cover.jpg
 ├── jeevashraya-architecture.png
+├── jeevashraya-ml_dashboard.jpg
 ├── jeevashraya-oled.jpg
 ├── jeevashraya-ble.jpg
 ├── jeevashraya-demo.mp4
