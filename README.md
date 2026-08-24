@@ -81,10 +81,7 @@ The prototype demonstration presents the operation of the sensing, communication
 
 The complete prototype demonstration is provided below.
 
-🎥 Watch the complete prototype demonstration
-<video width="100%" controls>
-  <source src="./jeevashraya-demo.mp4" type="video/mp4">
-</video>
+https://github.com/user-attachments/assets/2fa5d9d6-f9fd-4afb-af13-d3d1fc530205
 
 
 ## Features (Detailed)
