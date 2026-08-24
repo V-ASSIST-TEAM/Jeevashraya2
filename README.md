@@ -83,173 +83,133 @@ The complete prototype demonstration is provided below.
 
 https://github.com/user-attachments/assets/2fa5d9d6-f9fd-4afb-af13-d3d1fc530205
 
-
 ## Features (Detailed)
 
 ### 1. Two-Node Distributed Architecture
 
-Jeevashraya separates sensing from household warning through two independent nodes.
+Jeevashraya uses a distributed architecture consisting of two primary hardware nodes:
 
 **Scout Node**
 
-The Scout Node is deployed on the vulnerable slope. It is responsible for:
+The Scout Node is deployed on the vulnerable slope and continuously monitors conditions using:
 
-* Continuous motion and tilt monitoring.
-* Atmospheric-pressure monitoring.
-* Sensor calibration and processing.
-* Sensor-fusion-based event detection.
-* Transmission of warning information through ESP-NOW.
-* BLE beacon operation during the post-burial rescue phase.
+* **MPU6050** for motion and tilt detection.
+* **BMP180** for atmospheric-pressure monitoring.
+* **ESP32** for local processing and sensor-fusion-based decision making.
 
 **Speaker Node**
 
-The Speaker Node is installed inside the nearby house or protected area. It receives alerts from the Scout Node and provides an immediate local warning through:
+The Speaker Node is positioned inside a nearby house or protected location. It receives alerts from the Scout Node and provides an immediate local warning through:
 
-* Audible buzzer activation.
-* OLED-based warning display.
+* An audible buzzer.
+* An OLED display.
 
-This distributed architecture allows the sensing unit to remain at the hazard location while the warning interface is positioned where occupants can respond to an alert.
+This separation allows sensing to take place directly at the hazard location while the warning interface remains accessible to occupants.
 
-### 2. Multi-Sensor Landslide Detection
+### 2. Simultaneous Sensor Fusion and False-Alarm Prevention
 
-The Scout Node combines measurements from two sensing modalities:
+Jeevashraya uses a dual-condition sensor-fusion mechanism to reduce false alarms.
 
-* **MPU6050** - detects motion and changes in orientation or tilt.
-* **BMP180** - measures atmospheric pressure changes.
+The system continuously evaluates two conditions:
 
-The combination provides complementary information for identifying environmental conditions associated with a potential landslide event.
+1. A significant and sustained **motion/tilt change** detected by the MPU6050.
+2. A corresponding **pressure change** detected by the BMP180.
 
-Rather than relying on a single sensor reading, Jeevashraya evaluates the combined sensor state before generating a warning.
-
-### 3. Baseline Calibration
-
-At system startup, the Scout Node establishes baseline measurements for the deployment environment.
-
-The baseline provides a reference against which subsequent sensor readings are evaluated. This allows the system to account for the initial orientation of the Scout Node and the prevailing pressure conditions at the deployment location.
-
-Changes in the measured parameters are then evaluated relative to these reference values.
-
-### 4. Sensor Fusion and Dual-Condition Verification
-
-The core warning mechanism is based on a dual-condition decision process.
-
-Conceptually:
+The warning condition is expressed as:
 
 **Alert = Motion/Tilt Condition AND Pressure Condition**
 
-A significant change in only one parameter does not independently trigger the final warning condition. The system requires the relevant changes in both monitored parameters before transitioning to the alert state.
+Importantly, **both conditions must be detected simultaneously within the defined detection window**. A change in only one parameter does not trigger the final alert.
 
-This approach is intended to reduce false triggering caused by isolated movement or environmental fluctuations.
+For example:
 
-The sensor-fusion mechanism is implemented locally on the embedded device, allowing the system to make the warning decision without relying on an external server.
+* **Motion/Tilt only → SAFE**
+* **Pressure change only → SAFE**
+* **Motion/Tilt + Pressure change simultaneously → ALERT**
 
-### 5. Sustained Motion Detection
+The Scout Node establishes baseline sensor values during initialization and evaluates subsequent measurements against these reference values. Sustained movement is considered rather than a single instantaneous change, helping distinguish potential slope movement from short-duration disturbances.
 
-The system considers the persistence of the detected movement rather than treating every instantaneous change as a landslide.
+### 3. Offline ESP-NOW Alert Communication
 
-The Scout Node evaluates the measured tilt and movement conditions over successive observations. Sustained changes are therefore distinguished from short-duration disturbances.
+Once the simultaneous sensor conditions are confirmed, the Scout Node transmits an alert to the Speaker Node using **ESP-NOW**.
 
-This temporal component improves the reliability of the warning mechanism by reducing sensitivity to isolated transient movements.
-
-### 6. Local ESP-NOW Communication
-
-When the sensor-fusion conditions indicate an alert, the Scout Node transmits the warning directly to the Speaker Node using **ESP-NOW**.
-
-ESP-NOW provides direct wireless communication between the two nodes without requiring:
+ESP-NOW provides direct device-to-device communication without requiring:
 
 * Internet connectivity.
 * A Wi-Fi router.
 * Cloud infrastructure.
 * Cellular connectivity.
 
-The communication therefore remains local and independent of external network availability.
+The warning pathway therefore remains operational independently of external communication infrastructure, which is particularly relevant during severe weather and disaster conditions.
 
-This characteristic is particularly relevant to disaster scenarios in which conventional communication infrastructure may be unavailable or disrupted.
+The alert pathway is:
 
-### 7. Audible and Visual Warning
+**Scout Node → ESP-NOW → Speaker Node**
 
-After receiving an alert from the Scout Node, the Speaker Node activates the local warning mechanism.
+### 4. Immediate Audible and Visual Warning
+
+After receiving the alert, the Speaker Node provides immediate feedback to occupants.
 
 The warning subsystem consists of:
 
-* **Buzzer** - provides an audible alert to occupants.
-* **OLED display** - displays the corresponding warning information.
+* **Buzzer** - generates an audible warning.
+* **OLED display** - displays the corresponding landslide alert.
 
-The combination of audible and visual feedback provides immediate notification to people inside the monitored residence.
+This combination provides both audible and visual notification, enabling occupants to recognize the warning even when environmental noise or visibility may be an issue.
 
-### 8. Two-Phase Disaster Response
+The prototype demonstrates the transition from the normal monitoring state to the alert state through the Speaker Node.
 
-A distinguishing feature of Jeevashraya is its operation across two stages of a landslide event.
+### 5. Two-Phase Disaster Response
+
+Jeevashraya is designed to address both the **warning phase** and the **post-disaster rescue phase** of a landslide event.
 
 #### Phase 1 - Early Warning
 
-During normal operation:
+The first phase follows:
 
-**Scout Node → Sensor Monitoring → Sensor Fusion → ESP-NOW → Speaker Node → Buzzer + OLED Alert**
+**Slope Monitoring → Sensor Fusion → ESP-NOW → Speaker Node → Buzzer + OLED Alert**
 
-The objective of this phase is to provide occupants with an early local warning when the monitored conditions indicate a potential landslide.
+The Scout Node detects the simultaneous sensor conditions and communicates the warning locally to the Speaker Node, allowing occupants to respond before or during the onset of a hazardous event.
 
 #### Phase 2 - Post-Burial Rescue
 
-If the landslide occurs and the Scout Node becomes buried, the system transitions into its rescue-oriented mode:
+If the landslide occurs and the Scout Node becomes buried, the system transitions to its rescue-oriented mode:
 
-**Buried Scout Node → BLE Beacon → J2Rescue → Proximity Detection → Localization**
+**Buried Scout Node → BLE Beacon → J2Rescue → Proximity Detection**
 
-The BLE beacon allows rescuers to search for the buried Scout Node from the debris surface.
+This allows the system to remain useful even after the Scout Node is no longer accessible or visible.
 
-### 9. BLE Rescue Beacon
+### 6. BLE-Based Rescue Beacon
 
-Following burial, the Scout Node switches to a BLE-based broadcasting mode.
+Following burial, the Scout Node switches to a **Bluetooth Low Energy (BLE) beacon mode** and continuously broadcasts a BLE signal.
 
-The node continuously advertises a BLE signal that can be detected by a nearby mobile device.
+The beacon can be detected by a nearby mobile device without requiring internet or cellular connectivity.
 
-This provides a communication mechanism for the post-disaster phase without depending on cellular or internet connectivity.
+The purpose of the beacon is to provide a proximity reference for rescuers searching across the debris surface, enabling them to progressively narrow down the location of the buried Scout Node.
 
-The objective is not to provide a conventional data connection but to allow rescuers to determine whether they are approaching the buried node.
+### 7. J2Rescue Mobile Application
 
-### 10. J2Rescue Mobile Application
+**J2Rescue** is the Kotlin-based Android application developed as the mobile rescue component of Jeevashraya.
 
-**J2Rescue** is the mobile application component of Jeevashraya and plays a central role in the post-disaster localization phase.
+The application scans for the BLE beacon transmitted by the buried Scout Node and provides proximity information to the rescuer.
 
-The application scans for the BLE signal transmitted by the buried Scout Node and provides proximity information to the rescuer.
+As the rescuer moves toward the beacon:
 
-As the rescuer moves across the debris:
+* The application detects the Scout Node's BLE signal.
+* Proximity information changes as the rescuer moves closer or farther away.
+* A **"Very Close"** indication signifies that the rescuer is directly above or extremely close to the buried Scout Node.
 
-* The BLE beacon is detected when within communication range.
-* The application provides an indication of proximity.
-* Increasing proximity indicates movement toward the buried node.
-* A **"Very Close"** indication identifies a location directly above or extremely close to the buried Scout Node.
+This provides a practical method for narrowing the search location within a debris field and extends Jeevashraya from an early-warning system into a post-disaster localization system.
 
-This enables rescue personnel to progressively narrow down the search area rather than relying solely on visual inspection of a large debris field.
+### 8. Sensor Data Collection and Machine Learning
 
-The J2Rescue application therefore extends the functionality of Jeevashraya from **warning generation to post-disaster localization**.
+Jeevashraya includes a sensor-data collection pipeline for recording measurements generated during system operation and testing.
 
-### 11. Sensor Data Collection and Machine Learning
+The recorded measurements are stored in `sensor_data.csv` and are used by the machine-learning component for sensor-pattern analysis and event classification.
 
-The project includes a sensor-data collection pipeline using the Scout Node and `logger.py`.
+The ML component complements the rule-based sensor-fusion mechanism by providing a data-driven approach to distinguishing patterns within the collected sensor measurements.
 
-The collected sensor measurements are stored in `sensor_data.csv` and are used for the development and evaluation of a machine-learning-based classification component.
-
-The machine-learning layer complements the existing rule-based sensor-fusion approach by providing a data-driven mechanism for analyzing sensor patterns.
-
-The ML implementation is maintained as part of the project development and will be included in the repository alongside the collected dataset.
-
-### 12. Offline and Infrastructure-Independent Operation
-
-The complete warning mechanism is designed to function without internet access.
-
-The Scout Node performs sensing and local decision-making, while ESP-NOW provides direct communication with the Speaker Node.
-
-During the rescue phase, BLE provides the local beacon mechanism and J2Rescue provides proximity-based localization.
-
-Therefore, the core system does not require:
-
-* Internet connectivity.
-* A Wi-Fi router.
-* Cloud services.
-* Cellular network availability.
-
-This makes the architecture suitable for disaster scenarios where communication infrastructure may be compromised.
+The corresponding ML implementation is included in the project repository alongside the collected dataset.
 
 ## Usage Instructions
 
@@ -407,18 +367,16 @@ The application can be built and deployed using the Android development environm
 ```text
 Jeevashraya2/
 ├── J2Rescue/
-│   └── Mobile rescue application
-├── ScoutNode
-├── speaker_node
+├── ScoutNode/
+├── speaker_node/
 ├── SensorFusion.ino
 ├── logger.py
 ├── sensor_data.csv
 ├── jeevashraya-cover.jpg
 ├── jeevashraya-architecture.png
-├── jeevashraya-model.jpg
 ├── jeevashraya-oled.jpg
-└── jeevashraya-ble.jpg
-│── jeevashraya-demo.mp4
+├── jeevashraya-ble.jpg
+├── jeevashraya-demo.mp4
 └── README.md
 ```
 
