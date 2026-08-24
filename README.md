@@ -1,5 +1,3 @@
-
-
 ---
 publishDate: 2026-08-24
 title: Jeevashraya - Offline Landslide Warning and Rescue System
@@ -45,7 +43,7 @@ Upon receiving the alert, the Speaker Node activates an audible buzzer and displ
 
 Jeevashraya also addresses the scenario in which the Scout Node is buried during a landslide. Following burial, the system enters a **BLE-based rescue beacon mode**, allowing the buried node to continuously broadcast a Bluetooth Low Energy signal.
 
-The **J2Rescue** mobile application assists rescuers in locating the buried Scout Node by detecting the BLE beacon and providing proximity information. As the rescuer approaches the buried node, the application indicates increasing proximity. A **"Very Near"** indication corresponds to the rescuer being directly above or extremely close to the buried node, thereby narrowing the search area within the debris.
+The **J2Rescue** mobile application assists rescuers in locating the buried Scout Node by detecting the BLE beacon and providing proximity information. As the rescuer approaches the buried node, the application indicates increasing proximity. A **"Very Close"** indication corresponds to the rescuer being directly above or extremely close to the buried node, thereby narrowing the search area within the debris.
 
 The project additionally incorporates a machine-learning component based on the sensor data collected during system testing. The collected dataset provides a foundation for developing and evaluating intelligent event classification alongside the rule-based sensor-fusion mechanism.
 
@@ -66,12 +64,6 @@ The prototype demonstration presents the operation of the sensing, communication
 ![Jeevashraya Architecture](/jeevashraya-architecture.png)
 
 *System architecture illustrating the Scout Node, ESP-NOW communication link, Speaker Node, BLE rescue beacon, and J2Rescue application.*
-
-#### Physical Demonstration Model
-
-![Jeevashraya Model](/jeevashraya-model.jpg)
-
-*Physical prototype representing the slope, monitored region, and nearby residential structure.*
 
 #### Alert Display
 
@@ -229,7 +221,7 @@ As the rescuer moves across the debris:
 * The BLE beacon is detected when within communication range.
 * The application provides an indication of proximity.
 * Increasing proximity indicates movement toward the buried node.
-* A **"Very Near"** indication identifies a location directly above or extremely close to the buried Scout Node.
+* A **"Very Close"** indication identifies a location directly above or extremely close to the buried Scout Node.
 
 This enables rescue personnel to progressively narrow down the search area rather than relying solely on visual inspection of a large debris field.
 
