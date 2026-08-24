@@ -201,15 +201,13 @@ As the rescuer moves toward the beacon:
 
 This provides a practical method for narrowing the search location within a debris field and extends Jeevashraya from an early-warning system into a post-disaster localization system.
 
-### 8. Sensor Data Collection and Machine Learning
+### 8. Machine Learning-Based Event Classification
 
-Jeevashraya includes a sensor-data collection pipeline for recording measurements generated during system operation and testing.
+Jeevashraya analyzes recorded tilt angles and barometric-pressure fluctuations using a time-series ML pipeline. Causal feature engineering with EWMA and dynamic kinetic interaction terms captures temporal patterns while preventing data leakage.
 
-The recorded measurements are stored in `sensor_data.csv` and are used by the machine-learning component for sensor-pattern analysis and event classification.
+An ExtraTrees classifier ("landslide_model.pkl") achieves 92.42% accuracy and 93.33% alert recall on the evaluated data, distinguishing benign transient creep from catastrophic shear-failure patterns. The model also generates live probability scores for three risk states: SAFE, FILTERED ANOMALY, and CRITICAL COLLAPSE.
 
-The ML component complements the rule-based sensor-fusion mechanism by providing a data-driven approach to distinguishing patterns within the collected sensor measurements.
-
-The corresponding ML implementation is included in the project repository alongside the collected dataset.
+The model and real-time dashboard ("app.py") are contained in the "ml_dashboard/" directory
 
 ## Usage Instructions
 
