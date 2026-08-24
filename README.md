@@ -2,7 +2,7 @@
 publishDate: 2026-08-24
 title: Jeevashraya - Offline Landslide Warning and Rescue System
 excerpt: An offline landslide early-warning and post-disaster rescue system combining multi-sensor fusion, ESP-NOW communication, BLE-based localization, and a dedicated mobile application.
-image: assets/images/jeevashraya-cover.jpg
+image: jeevashraya-cover.jpg
 tags:
 - landslide
 - disaster-management
@@ -55,19 +55,19 @@ The prototype demonstration presents the operation of the sensing, communication
 
 #### System Prototype
 
-![Jeevashraya Prototype](assets/images/jeevashraya-cover.jpg)
+![Jeevashraya Prototype](/jeevashraya-cover.jpg)
 
 *Jeevashraya prototype demonstrating the integrated sensing, communication, and warning architecture.*
 
 #### System Architecture
 
-![Jeevashraya Architecture](assets/images/jeevashraya-architecture.png)
+![Jeevashraya Architecture](/jeevashraya-architecture.png)
 
 *System architecture illustrating the Scout Node, ESP-NOW communication link, Speaker Node, BLE rescue beacon, and J2Rescue application.*
 
 #### Physical Demonstration Model
 
-![Jeevashraya Model](assets/images/jeevashraya-model.jpg)
+![Jeevashraya Model](/jeevashraya-model.jpg)
 
 *Physical prototype representing the slope, monitored region, and nearby residential structure.*
 
