@@ -73,13 +73,13 @@ The prototype demonstration presents the operation of the sensing, communication
 
 #### Alert Display
 
-![Jeevashraya OLED](assets/images/jeevashraya-oled.jpg)
+![Jeevashraya OLED](/jeevashraya-oled.jpg)
 
 *OLED display indicating the transition from normal monitoring to an alert condition.*
 
 #### J2Rescue Mobile Application
 
-![J2Rescue Mobile Application](assets/images/jeevashraya-ble.jpg)
+![J2Rescue Mobile Application](/jeevashraya-ble.jpg)
 
 *J2Rescue application detecting the BLE rescue beacon and providing proximity information for locating the buried Scout Node.*
 
@@ -88,7 +88,7 @@ The prototype demonstration presents the operation of the sensing, communication
 The complete prototype demonstration is provided below.
 
 <video controls width="100%">
-  <source src="assets/videos/jeevashraya-demo.mp4" type="video/mp4">
+  <source src="/jeevashraya-demo.mp4" type="video/mp4">
 </video>
 
 ## Features (Detailed)
@@ -420,15 +420,12 @@ Jeevashraya2/
 ├── SensorFusion.ino
 ├── logger.py
 ├── sensor_data.csv
-├── assets/
-│   ├── images/
-│   │   ├── jeevashraya-cover.jpg
-│   │   ├── jeevashraya-architecture.png
-│   │   ├── jeevashraya-model.jpg
-│   │   ├── jeevashraya-oled.jpg
-│   │   └── jeevashraya-ble.jpg
-│   └── videos/
-│       └── jeevashraya-demo.mp4
+├── jeevashraya-cover.jpg
+├── jeevashraya-architecture.png
+├── jeevashraya-model.jpg
+├── jeevashraya-oled.jpg
+└── jeevashraya-ble.jpg
+│── jeevashraya-demo.mp4
 └── README.md
 ```
 
