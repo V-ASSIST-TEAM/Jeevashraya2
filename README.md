@@ -1,3 +1,5 @@
+
+
 ---
 publishDate: 2026-08-24
 title: Jeevashraya - Offline Landslide Warning and Rescue System
@@ -87,8 +89,9 @@ The prototype demonstration presents the operation of the sensing, communication
 
 The complete prototype demonstration is provided below.
 
-[🎥 Watch the complete prototype demonstration]
-<video src="./jeevashraya-demo.mp4" controls width="100%">
+🎥 Watch the complete prototype demonstration
+<video width="100%" controls>
+  <source src="./jeevashraya-demo.mp4" type="video/mp4">
 </video>
 
 
